@@ -26,10 +26,6 @@ type Cluster struct {
 	kubeconfigPath  string // not provided by config.yaml
 }
 
-func (c *Cluster) FilterValue() string {
-	return c.Nickname
-}
-
 func (c *Cluster) SsoLogin() {
 	cmd := exec.Command("aws", "sso", "login", "--profile", c.Profile)
 
@@ -70,8 +66,8 @@ func (c *Cluster) GenerateKubeconfig() {
 }
 
 func (c *Cluster) GetEndpoint() {
-	output, err := exec.Command("aws", "eks", "describe-cluster", "--Name", c.Name,
-		"--query", "Cluster.endpoint", "--output", "text", "--Region", c.Region).Output()
+	output, err := exec.Command("aws", "eks", "describe-cluster", "--name", c.Name,
+		"--query", "Cluster.endpoint", "--output", "text", "--region", c.Region).Output()
 	if err != nil {
 		log.Fatalf("Failed to get Cluster endpoint, %v", err)
 	}
@@ -79,8 +75,8 @@ func (c *Cluster) GetEndpoint() {
 }
 
 func (c *Cluster) GetCert() {
-	output, err := exec.Command("aws", "eks", "describe-cluster", "--Name", c.Name,
-		"--query", "Cluster.certificateAuthority.data", "--output", "text", "--Region", c.Region).Output()
+	output, err := exec.Command("aws", "eks", "describe-cluster", "--name", c.Name,
+		"--query", "Cluster.certificateAuthority.data", "--output", "text", "--region", c.Region).Output()
 	if err != nil {
 		log.Fatalf("Failed to get Cluster certificate data, %v", err)
 	}
