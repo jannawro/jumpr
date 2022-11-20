@@ -31,11 +31,11 @@ func (c *Cluster) FilterValue() string {
 }
 
 func (c *Cluster) SsoLogin() {
-	cmd := exec.Command("aws", "sso", "login", "--Profile", c.Profile)
+	cmd := exec.Command("aws", "sso", "login", "--profile", c.Profile)
 
 	err := cmd.Run()
 	if err != nil {
-		log.Fatalf("Failed to login into Profile %v, %v", c.Profile, err)
+		log.Fatalf("Failed to login into profile %v, %v", c.Profile, err)
 	}
 
 	if err = os.Setenv("AWS_DEFAULT_PROFILE", c.Profile); err != nil {
