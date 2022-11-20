@@ -14,13 +14,8 @@ const (
 )
 
 var (
-	cfg Config
+	cfg []cl.Cluster
 )
-
-type Config struct {
-	vimMode  bool
-	clusters []cl.Cluster
-}
 
 func init() {
 	configBody, err := ioutil.ReadFile(os.Getenv("HOME") + configPath)

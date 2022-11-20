@@ -10,7 +10,7 @@ import (
 func main() {
 	switch len(os.Args) {
 	case 1:
-		cli.PromptUser()
+		cli.TeaPrompt()
 	case 2:
 		cli.InlineLogin(os.Args[1])
 	default:

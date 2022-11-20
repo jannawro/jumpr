@@ -8,29 +8,28 @@ import (
 
 func PromptUser() {
 	searcher := func(input string, index int) bool {
-		return fuzzy.Match(input, cfg.clusters[index].ClusterNickname) || fuzzy.Match(input, cfg.clusters[index].ClusterName)
+		return fuzzy.Match(input, cfg[index].Nickname()) || fuzzy.Match(input, cfg[index].Name())
 	}
 
 	promptTemplate := &promptui.SelectTemplates{
 		Label:    "{{ . }}",
-		Active:   "{{ .ClusterNickname | blue }} ({{ .ClusterName | faint }})",
-		Inactive: "{{ .ClusterNickname | faint }}",
-		Selected: "Selected: {{ .ClusterNickname | blue }}",
+		Active:   "{{ .nickname | blue }} ({{ .clusterName | faint }})",
+		Inactive: "{{ .nickname | faint }}",
+		Selected: "Selected: {{ .nickname | blue }}",
 		Details: `
 --------- Cluster ----------
-{{ "Nickname:" | faint }}	 {{ .ClusterNickname }}
-{{ "Name:" | faint }}	 {{ .ClusterName }}
-{{ "Region:" | faint }}	 {{ .AWSRegion }}
-{{ "Profile:" | faint }}	 {{ .AWSProfile }}`,
+{{ "Nickname:" | faint }}	 {{ .nickname }}
+{{ "Name:" | faint }}	 {{ .name }}
+{{ "Region:" | faint }}	 {{ .region }}
+{{ "Profile:" | faint }}	 {{ .profile }}`,
 	}
 
 	prompt := promptui.Select{
 		Label:     "Select a cluster",
-		Items:     cfg.clusters,
+		Items:     cfg,
 		Size:      8,
 		Templates: promptTemplate,
 		Searcher:  searcher,
-		IsVimMode: cfg.vimMode,
 	}
 
 	i, _, err := prompt.Run()
@@ -38,9 +37,9 @@ func PromptUser() {
 		log.Fatal(err)
 	}
 
-	cfg.clusters[i].SsoLogin()
-	cfg.clusters[i].GetCert()
-	cfg.clusters[i].GetEndpoint()
-	cfg.clusters[i].GenerateKubeconfig()
-	cfg.clusters[i].PrintExports()
+	cfg[i].SsoLogin()
+	cfg[i].GetCert()
+	cfg[i].GetEndpoint()
+	cfg[i].GenerateKubeconfig()
+	cfg[i].PrintExports()
 }
