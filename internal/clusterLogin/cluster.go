@@ -21,9 +21,9 @@ type Cluster struct {
 	Region          string `yaml:"awsRegion"`
 	AccountId       string `yaml:"awsAccountId"`
 	Proxy           string `yaml:"Proxy"`
-	certificateData string // not provided by config.yaml
-	clusterEndpoint string // not provided by config.yaml
-	kubeconfigPath  string // not provided by config.yaml
+	CertificateData string // not provided by config.yaml
+	ClusterEndpoint string // not provided by config.yaml
+	KubeconfigPath  string // not provided by config.yaml
 }
 
 func (c *Cluster) SsoLogin() {
@@ -54,7 +54,7 @@ func (c *Cluster) GenerateKubeconfig() {
 
 	kubePath := "/tmp/kubeconfig-" + c.Name
 
-	c.kubeconfigPath = kubePath
+	c.KubeconfigPath = kubePath
 
 	f, err := os.Create(kubePath)
 	if err != nil {
@@ -71,7 +71,7 @@ func (c *Cluster) GetEndpoint() {
 	if err != nil {
 		log.Fatalf("Failed to get Cluster endpoint, %v", err)
 	}
-	c.clusterEndpoint = string(output)
+	c.ClusterEndpoint = string(output)
 }
 
 func (c *Cluster) GetCert() {
@@ -80,7 +80,7 @@ func (c *Cluster) GetCert() {
 	if err != nil {
 		log.Fatalf("Failed to get Cluster certificate data, %v", err)
 	}
-	c.certificateData = string(output)
+	c.CertificateData = string(output)
 }
 
 func (c *Cluster) PrintExports() {
