@@ -6,9 +6,9 @@ import (
 	"log"
 )
 
-func PromptUser() {
+func MinimalPrompt() {
 	searcher := func(input string, index int) bool {
-		return fuzzy.Match(input, cfg[index].Nickname()) || fuzzy.Match(input, cfg[index].Name())
+		return fuzzy.Match(input, cfg[index].Nickname) || fuzzy.Match(input, cfg[index].Name)
 	}
 
 	promptTemplate := &promptui.SelectTemplates{

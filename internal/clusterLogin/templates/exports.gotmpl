@@ -1,6 +1,6 @@
 Paste the commands below into your CLI to remain in this profile/region:
 ------------------------------------------------------------------------
-export AWS_DEFAULT_PROFILE="{{ .AWSProfile }}"
-export AWS_REGION="{{ .AWSRegion }}"
-export KUBECONFIG="{{ .KubeconfigPath }}"
+export AWS_DEFAULT_PROFILE="{{ .Profile }}"
+export AWS_REGION="{{ .Region }}"
+export KUBECONFIG="{{ .kubeconfigPath }}"
 {{ if ne .Proxy "" }}export http_proxy="{{ .Proxy }}"{{end}}

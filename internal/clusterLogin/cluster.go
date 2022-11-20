@@ -15,66 +15,30 @@ var (
 )
 
 type Cluster struct {
-	name            string `yaml:"name"`
-	nickname        string `yaml:"clusterNickname"`
-	profile         string `yaml:"awsProfile"`
-	region          string `yaml:"awsRegion"`
-	accountId       string `yaml:"awsAccountId"`
-	proxy           string `yaml:"proxy"`
+	Name            string `yaml:"clusterName"`
+	Nickname        string `yaml:"clusterNickname"`
+	Profile         string `yaml:"awsProfile"`
+	Region          string `yaml:"awsRegion"`
+	AccountId       string `yaml:"awsAccountId"`
+	Proxy           string `yaml:"Proxy"`
 	certificateData string // not provided by config.yaml
 	clusterEndpoint string // not provided by config.yaml
 	kubeconfigPath  string // not provided by config.yaml
 }
 
-func (c *Cluster) Name() string {
-	return c.name
-}
-
-func (c *Cluster) Nickname() string {
-	return c.nickname
-}
-
-func (c *Cluster) Profile() string {
-	return c.profile
-}
-
-func (c *Cluster) Region() string {
-	return c.region
-}
-
-func (c *Cluster) AccountId() string {
-	return c.accountId
-}
-
-func (c *Cluster) Proxy() string {
-	return c.proxy
-}
-
-func (c *Cluster) CertificateData() string {
-	return c.certificateData
-}
-
-func (c *Cluster) ClusterEndpoint() string {
-	return c.clusterEndpoint
-}
-
-func (c *Cluster) KubeconfigPath() string {
-	return c.kubeconfigPath
-}
-
 func (c *Cluster) FilterValue() string {
-	return c.nickname
+	return c.Nickname
 }
 
 func (c *Cluster) SsoLogin() {
-	cmd := exec.Command("aws", "sso", "login", "--profile", c.profile)
+	cmd := exec.Command("aws", "sso", "login", "--Profile", c.Profile)
 
 	err := cmd.Run()
 	if err != nil {
-		log.Fatalf("Failed to login into profile %v, %v", c.profile, err)
+		log.Fatalf("Failed to login into Profile %v, %v", c.Profile, err)
 	}
 
-	if err = os.Setenv("AWS_DEFAULT_PROFILE", c.profile); err != nil {
+	if err = os.Setenv("AWS_DEFAULT_PROFILE", c.Profile); err != nil {
 		log.Fatalf("Failed to set AWS_DEFAULT_PROFILE for further operations, %v", err)
 	}
 }
@@ -92,7 +56,7 @@ func (c *Cluster) GenerateKubeconfig() {
 		log.Fatalf("Failed to execute kubeconfig template, %v", err)
 	}
 
-	kubePath := "/tmp/kubeconfig-" + c.name
+	kubePath := "/tmp/kubeconfig-" + c.Name
 
 	c.kubeconfigPath = kubePath
 
@@ -106,8 +70,8 @@ func (c *Cluster) GenerateKubeconfig() {
 }
 
 func (c *Cluster) GetEndpoint() {
-	output, err := exec.Command("aws", "eks", "describe-cluster", "--name", c.name,
-		"--query", "Cluster.endpoint", "--output", "text", "--region", c.region).Output()
+	output, err := exec.Command("aws", "eks", "describe-cluster", "--Name", c.Name,
+		"--query", "Cluster.endpoint", "--output", "text", "--Region", c.Region).Output()
 	if err != nil {
 		log.Fatalf("Failed to get Cluster endpoint, %v", err)
 	}
@@ -115,8 +79,8 @@ func (c *Cluster) GetEndpoint() {
 }
 
 func (c *Cluster) GetCert() {
-	output, err := exec.Command("aws", "eks", "describe-cluster", "--name", c.name,
-		"--query", "Cluster.certificateAuthority.data", "--output", "text", "--region", c.region).Output()
+	output, err := exec.Command("aws", "eks", "describe-cluster", "--Name", c.Name,
+		"--query", "Cluster.certificateAuthority.data", "--output", "text", "--Region", c.Region).Output()
 	if err != nil {
 		log.Fatalf("Failed to get Cluster certificate data, %v", err)
 	}
