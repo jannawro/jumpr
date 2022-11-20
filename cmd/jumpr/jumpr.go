@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/jannawro/jumpr/internal/cli"
 	"log"
 	"os"
+
+	"github.com/jannawro/jumpr/internal/cli"
 )
 
 func main() {

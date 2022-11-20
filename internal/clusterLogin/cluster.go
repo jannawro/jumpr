@@ -3,7 +3,6 @@ package clusterLogin
 import (
 	"bytes"
 	"embed"
-	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -21,6 +20,7 @@ type Cluster struct {
 	AWSProfile      string `yaml:"awsProfile"`
 	AWSRegion       string `yaml:"awsRegion"`
 	AWSAccountId    string `yaml:"awsAccountId"`
+	Proxy           string `yaml:"proxy"`
 	CertificateData string // not provided by config.yaml
 	ClusterEndpoint string // not provided by config.yaml
 	KubeconfigPath  string // not provided by config.yaml
@@ -40,7 +40,7 @@ func (c *Cluster) SsoLogin() {
 }
 
 func (c *Cluster) GenerateKubeconfig() {
-	tmpl, err := template.New("kubeconfig.tpl").ParseFS(templates, "templates/kubeconfig.tpl")
+	tmpl, err := template.New("kubeconfig.gotmpl").ParseFS(templates, "templates/kubeconfig.gotmpl")
 	if err != nil {
 		log.Fatalf("Failed to parse kubeconfig template, %v", err)
 	}
@@ -82,12 +82,13 @@ func (c *Cluster) GetCert() {
 }
 
 func (c *Cluster) PrintExports() {
-	fmt.Printf(`
-Paste the commands below into your CLI to remain in this profile/region:
-------------------------------------------------------------------------
-export AWS_DEFAULT_PROFILE="%v"
-export AWS_REGION="%v"
-export KUBECONFIG="%v"
-export http_proxy=http://10.122.32.110:3128
-`, c.AWSProfile, c.AWSRegion, c.KubeconfigPath)
+	tmpl, err := template.New("exports.gotmpl").ParseFS(templates, "templates/exports.gotmpl")
+	if err != nil {
+		log.Fatalf("Failed to parse kubeconfig template, %v", err)
+	}
+
+	err = tmpl.Execute(os.Stdout, c)
+	if err != nil {
+		log.Fatalf("Failed to execute exports template, %v", err)
+	}
 }

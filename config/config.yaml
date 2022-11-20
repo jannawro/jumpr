@@ -6,6 +6,7 @@
   awsProfile: profile # name of the profile in your ~/.aws/config that would allow you to access the cluster
   awsRegion: some-where-1 # region where the cluster is located
   awsAccountId: "123456789123" # account Id where your cluster is located
+  proxy: "http_proxy=127.0.0.1" # (optional) proxy server to reach your clusters control plane endpoint
 
 # or multiple clusters
 - clusterName: first-cluster-name
@@ -13,8 +14,10 @@
   awsProfile: profile
   awsRegion: some-where-1
   awsAccountId: "123456789123"
+  proxy: "http_proxy=127.0.0.1"
 - clusterName: second-cluster-name
   clusterNickname: second-nickname
   awsProfile: profile
   awsRegion: some-where-1
   awsAccountId: "123456789123"
+  proxy: "http_proxy=127.0.0.1"
