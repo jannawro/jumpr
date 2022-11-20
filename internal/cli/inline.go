@@ -6,7 +6,7 @@ import (
 )
 
 func InlineLogin(input string) {
-	for _, cluster := range data {
+	for _, cluster := range cfg.clusters {
 		if cluster.ClusterNickname == input || cluster.ClusterName == input {
 			cluster.SsoLogin()
 			cluster.GetCert()

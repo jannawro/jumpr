@@ -14,8 +14,13 @@ const (
 )
 
 var (
-	data []cl.Cluster
+	cfg Config
 )
+
+type Config struct {
+	vimMode  bool
+	clusters []cl.Cluster
+}
 
 func init() {
 	configBody, err := ioutil.ReadFile(os.Getenv("HOME") + configPath)
@@ -23,7 +28,7 @@ func init() {
 		log.Fatalf("Failed to read from your %v file, %v", os.Getenv("HOME")+configPath, err)
 	}
 
-	err = yaml.Unmarshal(configBody, &data)
+	err = yaml.Unmarshal(configBody, &cfg)
 	if err != nil {
 		log.Fatalf("Failed to extract data form your %v file, %v", os.Getenv("HOME")+configPath, err)
 	}

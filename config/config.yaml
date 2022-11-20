@@ -1,23 +1,9 @@
 #sample config file for jumpr:
-
-# one cluster
-- clusterName: one-cluster-name # the actual name of the EKS cluster in AWS
-  clusterNickname: one-nickname # an additional name by which you'll be able to find the cluster
+vimMode: true # (optional) sets whether to use the arrow keys or vim movements to browse the list of clusters. Defaults to false
+clusters:
+- clusterName: cluster-name # the actual name of the EKS cluster in AWS
+  clusterNickname: nickname # an additional name by which you'll be able to find the cluster
   awsProfile: profile # name of the profile in your ~/.aws/config that would allow you to access the cluster
   awsRegion: some-where-1 # region where the cluster is located
-  awsAccountId: "123456789123" # account Id where your cluster is located
-  proxy: "http_proxy=127.0.0.1" # (optional) proxy server to reach your clusters control plane endpoint
-
-# or multiple clusters
-- clusterName: first-cluster-name
-  clusterNickname: first-nickname
-  awsProfile: profile
-  awsRegion: some-where-1
-  awsAccountId: "123456789123"
-  proxy: "http_proxy=127.0.0.1"
-- clusterName: second-cluster-name
-  clusterNickname: second-nickname
-  awsProfile: profile
-  awsRegion: some-where-1
-  awsAccountId: "123456789123"
-  proxy: "http_proxy=127.0.0.1"
+  awsAccountId: "123456789123" # account id where your cluster is located
+  proxy: "http_proxy=127.0.0.1:8080" # (optional) proxy server to reach your clusters control plane endpoint

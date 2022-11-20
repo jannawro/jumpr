@@ -8,7 +8,7 @@ import (
 
 func PromptUser() {
 	searcher := func(input string, index int) bool {
-		return fuzzy.Match(input, data[index].ClusterNickname) || fuzzy.Match(input, data[index].ClusterName)
+		return fuzzy.Match(input, cfg.clusters[index].ClusterNickname) || fuzzy.Match(input, cfg.clusters[index].ClusterName)
 	}
 
 	promptTemplate := &promptui.SelectTemplates{
@@ -26,10 +26,11 @@ func PromptUser() {
 
 	prompt := promptui.Select{
 		Label:     "Select a cluster",
-		Items:     data,
+		Items:     cfg.clusters,
 		Size:      8,
 		Templates: promptTemplate,
 		Searcher:  searcher,
+		IsVimMode: cfg.vimMode,
 	}
 
 	i, _, err := prompt.Run()
@@ -37,9 +38,9 @@ func PromptUser() {
 		log.Fatal(err)
 	}
 
-	data[i].SsoLogin()
-	data[i].GetCert()
-	data[i].GetEndpoint()
-	data[i].GenerateKubeconfig()
-	data[i].PrintExports()
+	cfg.clusters[i].SsoLogin()
+	cfg.clusters[i].GetCert()
+	cfg.clusters[i].GetEndpoint()
+	cfg.clusters[i].GenerateKubeconfig()
+	cfg.clusters[i].PrintExports()
 }
