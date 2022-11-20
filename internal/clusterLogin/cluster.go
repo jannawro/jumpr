@@ -20,7 +20,7 @@ type Cluster struct {
 	Profile         string `yaml:"awsProfile"`
 	Region          string `yaml:"awsRegion"`
 	AccountId       string `yaml:"awsAccountId"`
-	Proxy           string `yaml:"Proxy"`
+	Proxy           string `yaml:"proxy"`
 	CertificateData string // not provided by config.yaml
 	ClusterEndpoint string // not provided by config.yaml
 	KubeconfigPath  string // not provided by config.yaml
