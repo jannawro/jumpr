@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"fmt"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -86,5 +85,9 @@ func TeaPrompt() {
 		log.Fatal("Failed to run prompt: ", err)
 	}
 
-	fmt.Println(choice.Nickname)
+	choice.SsoLogin()
+	choice.GetCert()
+	choice.GetEndpoint()
+	choice.GenerateKubeconfig()
+	choice.PrintExports()
 }
