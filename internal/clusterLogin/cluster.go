@@ -67,7 +67,7 @@ func (c *Cluster) GenerateKubeconfig() {
 
 func (c *Cluster) GetEndpoint() {
 	output, err := exec.Command("aws", "eks", "describe-cluster", "--name", c.Name,
-		"--query", "Cluster.endpoint", "--output", "text", "--region", c.Region).Output()
+		"--query", "cluster.endpoint", "--output", "text", "--region", c.Region).Output()
 	if err != nil {
 		log.Fatalf("Failed to get Cluster endpoint, %v", err)
 	}
@@ -76,9 +76,9 @@ func (c *Cluster) GetEndpoint() {
 
 func (c *Cluster) GetCert() {
 	output, err := exec.Command("aws", "eks", "describe-cluster", "--name", c.Name,
-		"--query", "Cluster.certificateAuthority.data", "--output", "text", "--region", c.Region).Output()
+		"--query", "cluster.certificateAuthority.data", "--output", "text", "--region", c.Region).Output()
 	if err != nil {
-		log.Fatalf("Failed to get Cluster certificate data, %v", err)
+		log.Fatalf("Failed to get cluster certificate data, %v", err)
 	}
 	c.CertificateData = string(output)
 }
