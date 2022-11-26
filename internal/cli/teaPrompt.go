@@ -7,7 +7,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/jannawro/jumpr/internal/clusterLogin"
+	"log"
 	"os"
+	"os/exec"
 )
 
 var (
@@ -150,7 +152,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 		switch msg.String() {
-		case "ctrl+c", "q":
+		case "q":
+			c := exec.Command("clear")
+			c.Stdout = os.Stdout
+			if err := c.Run(); err != nil {
+				log.Fatal("Failed to clear the terminal before closing.")
+			}
 			os.Exit(0)
 		}
 		switch {
