@@ -2,7 +2,11 @@ package clusterLogin
 
 import (
 	"bytes"
+	"context"
 	"embed"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"log"
 	"os"
 	"os/exec"
@@ -21,6 +25,7 @@ type Cluster struct {
 	Region          string `yaml:"awsRegion"`
 	AccountId       string `yaml:"awsAccountId"`
 	Proxy           string `yaml:"proxy"`
+	AwsConfig       aws.Config
 	CertificateData string // not provided by config.yaml
 	ClusterEndpoint string // not provided by config.yaml
 	KubeconfigPath  string // not provided by config.yaml
@@ -34,9 +39,26 @@ func (c *Cluster) SsoLogin() {
 		log.Fatalf("Failed to login into profile %v, %v", c.Profile, err)
 	}
 
-	if err = os.Setenv("AWS_DEFAULT_PROFILE", c.Profile); err != nil {
-		log.Fatalf("Failed to set AWS_DEFAULT_PROFILE for further operations, %v", err)
+	c.AwsConfig, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(c.Profile))
+	if err != nil {
+		log.Fatalf("Failed loading aws profile from ~/.aws/config: %v", err)
 	}
+}
+
+func (c *Cluster) GetClusterInfo() {
+	client := eks.NewFromConfig(c.AwsConfig, func(o *eks.Options) {
+		o.Region = c.Region
+	})
+
+	resp, err := client.DescribeCluster(context.TODO(), &eks.DescribeClusterInput{
+		Name: aws.String(c.Name),
+	})
+	if err != nil {
+		log.Fatal("Failed at getting cluster information:\n", err)
+	}
+
+	c.ClusterEndpoint = aws.ToString(resp.Cluster.Endpoint)
+	c.CertificateData = aws.ToString(resp.Cluster.CertificateAuthority.Data)
 }
 
 func (c *Cluster) GenerateKubeconfig() {
@@ -63,24 +85,6 @@ func (c *Cluster) GenerateKubeconfig() {
 	defer f.Close()
 
 	_, err = f.WriteString(b.String())
-}
-
-func (c *Cluster) GetEndpoint() {
-	output, err := exec.Command("aws", "eks", "describe-cluster", "--name", c.Name,
-		"--query", "cluster.endpoint", "--output", "text", "--region", c.Region).Output()
-	if err != nil {
-		log.Fatalf("Failed to get Cluster endpoint, %v", err)
-	}
-	c.ClusterEndpoint = string(output)
-}
-
-func (c *Cluster) GetCert() {
-	output, err := exec.Command("aws", "eks", "describe-cluster", "--name", c.Name,
-		"--query", "cluster.certificateAuthority.data", "--output", "text", "--region", c.Region).Output()
-	if err != nil {
-		log.Fatalf("Failed to get cluster certificate data, %v", err)
-	}
-	c.CertificateData = string(output)
 }
 
 func (c *Cluster) PrintExports() {

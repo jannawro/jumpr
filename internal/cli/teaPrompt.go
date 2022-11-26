@@ -185,8 +185,7 @@ func TeaPrompt() {
 	}
 
 	choice.SsoLogin()
-	choice.GetCert()
-	choice.GetEndpoint()
+	choice.GetClusterInfo()
 	choice.GenerateKubeconfig()
 	choice.PrintExports()
 }
