@@ -1,16 +1,24 @@
 package cli
 
 import (
+	"fmt"
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/jannawro/jumpr/internal/clusterLogin"
-	"log"
+	"os"
 )
 
 var (
-	docStyle = lipgloss.NewStyle().Margin(1, 2)
-	choice   clusterLogin.Cluster
+	appStyle = lipgloss.NewStyle().Padding(1, 2)
+
+	titleStyle = lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#FFFDF5")).
+			Background(lipgloss.Color("#25A065")).
+			Padding(0, 1)
+
+	choice clusterLogin.Cluster
 )
 
 type item struct {
@@ -21,53 +29,90 @@ func (i item) Title() string       { return i.title }
 func (i item) Description() string { return i.desc }
 func (i item) FilterValue() string { return i.title }
 
-type model struct {
-	list   list.Model
-	cursor int
+type listKeyMap struct {
+	toggleHelpMenu key.Binding
 }
 
-func (m model) Init() tea.Cmd {
-	return nil
+type delegateKeyMap struct {
+	choose key.Binding
 }
 
-func (m model) View() string {
-	return docStyle.Render(m.list.View())
+func newDelegateKeyMap() *delegateKeyMap {
+	return &delegateKeyMap{
+		choose: key.NewBinding(
+			key.WithKeys("enter"),
+			key.WithHelp("enter", "choose"),
+		),
+	}
 }
 
-func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "ctrl+c", "q":
-			return m, tea.Quit
-		case "enter":
-			choice = cfg[m.cursor]
-			return m, tea.Quit
-		case "down", "j":
-			m.cursor++
-			if m.cursor >= len(cfg) {
-				m.cursor = 0
-			}
+func newItemDelegate(keys *delegateKeyMap) list.DefaultDelegate {
+	d := list.NewDefaultDelegate()
 
-		case "up", "k":
-			m.cursor--
-			if m.cursor < 0 {
-				m.cursor = len(cfg) - 1
+	d.UpdateFunc = func(msg tea.Msg, m *list.Model) tea.Cmd {
+		var title string
+
+		if i, ok := m.SelectedItem().(item); ok {
+			title = i.Title()
+		} else {
+			return nil
+		}
+
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			switch {
+			case key.Matches(msg, keys.choose):
+				for _, cluster := range cfg {
+					if title == cluster.Nickname {
+						choice = cluster
+					}
+				}
+				return tea.Quit
 			}
 		}
 
-	case tea.WindowSizeMsg:
-		h, v := docStyle.GetFrameSize()
-		m.list.SetSize(msg.Width-h, msg.Height-v)
+		return nil
 	}
 
-	var cmd tea.Cmd
-	m.list, cmd = m.list.Update(msg)
-	return m, cmd
+	help := []key.Binding{keys.choose}
+
+	d.ShortHelpFunc = func() []key.Binding {
+		return help
+	}
+
+	d.FullHelpFunc = func() [][]key.Binding {
+		return [][]key.Binding{help}
+	}
+
+	return d
 }
 
-func TeaPrompt() {
-	var items []list.Item
+func newListKeyMap() *listKeyMap {
+	return &listKeyMap{
+		toggleHelpMenu: key.NewBinding(
+			key.WithKeys("H"),
+			key.WithHelp("H", "toggle help"),
+		),
+	}
+}
+
+type model struct {
+	list         list.Model
+	keys         *listKeyMap
+	delegateKeys *delegateKeyMap
+}
+
+func (m model) Init() tea.Cmd {
+	return tea.EnterAltScreen
+}
+
+func newModel() model {
+	var (
+		delegateKeys = newDelegateKeyMap()
+		listKeys     = newListKeyMap()
+		items        []list.Item
+	)
+
 	for _, cluster := range cfg {
 		items = append(items, item{
 			title: cluster.Nickname,
@@ -75,14 +120,61 @@ func TeaPrompt() {
 		})
 	}
 
-	m := model{list: list.New(items, list.NewDefaultDelegate(), 0, 0)}
-	m.list.Title = "Clusters to choose from"
+	delegate := newItemDelegate(delegateKeys)
+	clusterList := list.New(items, delegate, 0, 0)
+	clusterList.Title = "Clusters"
+	clusterList.Styles.Title = titleStyle
+	clusterList.AdditionalFullHelpKeys = func() []key.Binding {
+		return []key.Binding{
+			listKeys.toggleHelpMenu,
+		}
+	}
 
-	p := tea.NewProgram(m, tea.WithAltScreen())
+	return model{
+		list:         clusterList,
+		keys:         listKeys,
+		delegateKeys: delegateKeys,
+	}
 
-	_, err := p.Run()
-	if err != nil {
-		log.Fatal("Failed to run prompt: ", err)
+}
+
+func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds []tea.Cmd
+
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		h, v := appStyle.GetFrameSize()
+		m.list.SetSize(msg.Width-h, msg.Height-v)
+	case tea.KeyMsg:
+		if m.list.FilterState() == list.Filtering {
+			break
+		}
+		switch msg.String() {
+		case "ctrl+c", "q":
+			os.Exit(0)
+		}
+		switch {
+		case key.Matches(msg, m.keys.toggleHelpMenu):
+			m.list.SetShowHelp(!m.list.ShowHelp())
+			return m, nil
+		}
+	}
+
+	newListModel, cmd := m.list.Update(msg)
+	m.list = newListModel
+	cmds = append(cmds, cmd)
+
+	return m, tea.Batch(cmds...)
+}
+
+func (m model) View() string {
+	return appStyle.Render(m.list.View())
+}
+
+func TeaPrompt() {
+	if _, err := tea.NewProgram(newModel()).Run(); err != nil {
+		fmt.Println("Error when generating prompt: ", err)
+		os.Exit(1)
 	}
 
 	choice.SsoLogin()
