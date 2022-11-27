@@ -1,0 +1,6 @@
+Paste the commands below into your CLI to log into {{ .Name }} in your current session:
+---------------------------------------------------------------------------------------
+export AWS_DEFAULT_PROFILE="{{ .Profile }}"
+export AWS_REGION="{{ .Region }}"
+export KUBECONFIG="{{ .KubeconfigPath }}"
+{{ if ne .Proxy "" }}export https_proxy={{ .Proxy }}{{end}}

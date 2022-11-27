@@ -1,4 +1,5 @@
 #sample config file for jumpr:
+clusters:
 - clusterName: cluster-name # the actual name of the EKS cluster in AWS
   clusterNickname: nickname # an additional name by which you'll be able to find the cluster
   awsProfile: profile # name of the profile in your ~/.aws/config that would allow you to access the cluster
