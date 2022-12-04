@@ -4,17 +4,23 @@ import (
 	"bytes"
 	"context"
 	"embed"
+	"fmt"
+	"os"
+
+	"text/template"
+
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/eks"
-	"os"
-	"os/exec"
-	"text/template"
+	"github.com/aws/aws-sdk-go/service/sso"
+	. "github.com/theurichde/go-aws-sso/pkg/sso"
 )
 
 var (
 	//go:embed "templates/*"
 	templates embed.FS
+	startUrl  = "https://d-936707ee8f.awsapps.com/start/"
+    roleName  = "aws-default-ops"
 )
 
 type Cluster struct {
@@ -31,10 +37,19 @@ type Cluster struct {
 }
 
 func (c *Cluster) SsoLogin() {
-	cmd := exec.Command("aws", "sso", "login", "--profile", c.Profile)
-	err := cmd.Run()
-	check("Failed logging into profile", err)
-
+	//	cmd := exec.Command("aws", "sso", "login", "--profile", c.Profile)
+	//	err := cmd.Run()
+	//	check("Failed logging into profile", err)
+    oidcApi, ssoApi := InitClients(c.Region)
+    clientInformation, _ := ProcessClientInformation(oidcApi, startUrl)
+    rci := &sso.GetRoleCredentialsInput{
+        AccountId: &c.AccountId,
+        RoleName: &roleName,
+        AccessToken: &clientInformation.AccessToken,
+    }
+    roleCredentials, err := ssoApi.GetRoleCredentials(rci)
+    fmt.Print(roleCredentials)
+    check("Failed getting role credentials:", err)
 	c.AwsConfig, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(c.Profile))
 	check("Failed loading aws profile from ~/.aws/config:", err)
 }
