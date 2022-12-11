@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"context"
 	"embed"
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/service/eks"
 	"os"
 	"os/exec"
 	"text/template"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/eks"
 )
 
 var (
@@ -32,8 +33,9 @@ type Cluster struct {
 
 func (c *Cluster) SsoLogin() {
 	cmd := exec.Command("aws", "sso", "login", "--profile", c.Profile)
+    cmd.Stdout = os.Stdout
 	err := cmd.Run()
-	check("Failed logging into profile", err)
+    check("Failed completing the login process:", err)
 
 	c.AwsConfig, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(c.Profile))
 	check("Failed loading aws profile from ~/.aws/config:", err)
