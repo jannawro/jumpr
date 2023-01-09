@@ -1,9 +1,9 @@
 package internal
 
 import (
-	"gopkg.in/yaml.v3"
-	"io/ioutil"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -20,7 +20,7 @@ var (
 )
 
 func init() {
-	configBody, err := ioutil.ReadFile(os.Getenv("HOME") + configPath)
+	configBody, err := os.ReadFile(os.Getenv("HOME") + configPath)
 	check("Failed at reading form your ~/.jumpr/config.yaml file:", err)
 
 	err = yaml.Unmarshal(configBody, &jumprConfig)

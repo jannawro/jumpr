@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/jannawro/jumpr/internal"
 	"log"
 	"os"
+
+	"github.com/jannawro/jumpr/internal"
 )
 
 func main() {

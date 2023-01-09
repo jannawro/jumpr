@@ -33,9 +33,9 @@ type Cluster struct {
 
 func (c *Cluster) SsoLogin() {
 	cmd := exec.Command("aws", "sso", "login", "--profile", c.Profile)
-    cmd.Stdout = os.Stdout
+	cmd.Stdout = os.Stdout
 	err := cmd.Run()
-    check("Failed completing the login process:", err)
+	check("Failed completing the login process:", err)
 
 	c.AwsConfig, err = config.LoadDefaultConfig(context.TODO(), config.WithSharedConfigProfile(c.Profile))
 	check("Failed loading aws profile from ~/.aws/config:", err)

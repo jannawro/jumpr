@@ -1,0 +1,18 @@
+run:
+  tests: false
+
+linters:
+  enable:
+    - bodyclose
+    - exportloopref
+    - goimports
+    - gosec
+    - nilerr
+    - predeclared
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - tparallel
+    - unconvert
+    - unparam
+    - whitespace
